@@ -38,7 +38,7 @@ jobs:
           DEDEUSERID: ${{secrets.DEDEUSERID}}
           SESSDATA: ${{secrets.SESSDATA}}
           BILI_JCT: ${{secrets.BILI_JCT}}
-          SERVERPUSHKEY: ${{secrets.SERVERPUSHKEY}}
+          SERVERPUSHKEY: ${{secrets.SCKEY}}
           TELEGRAMBOTTOKEN: ${{secrets.TELEGRAMBOTTOKEN}}
           TELEGRAMCHATID: ${{secrets.TELEGRAMCHATID}}
         run: |
