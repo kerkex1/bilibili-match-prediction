@@ -1,50 +1,44 @@
-name: Daily Bonus
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: AUTO_TASK_FOR_bilibili-match-prediction
 
 on:
-  pull_request:
-    branches:
-      - sean
   push:
-    branches:
-      - sean
+    branches: main
+  workflow_dispatch:
   schedule:
-    - cron: 0 0 * * *
-  watch:
-   types: [started]
-   if: github.event.repository.owner.id == github.event.sender.id
+    - cron: '10 22 * * *'
+    # cron表达式，Actions时区是UTC时间，所以上午9点要往前推8个小时
+
 
 jobs:
-  run:
+  start:
+
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
-
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-
       - name: Cache local Maven repository
         uses: actions/cache@v2
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            ${{ runner.os }}-maven-84d60e0d6a42a201cd0c681ea9619d8646f33f23d2d7bc9e30ded1dcc38e3751
-
-      - name: Run daily bonus
+            ${{ runner.os }}-maven-
+      - name: Build with Maven
         env:
-          DEDEUSERID: ${{secrets.DEDEUSERID}}
-          SESSDATA: ${{secrets.SESSDATA}}
-          BILI_JCT: ${{secrets.BILI_JCT}}
-          SERVERPUSHKEY: ${{secrets.SCKEY}}
-          TELEGRAMBOTTOKEN: ${{secrets.TELEGRAMBOTTOKEN}}
-          TELEGRAMCHATID: ${{secrets.TELEGRAMCHATID}}
-        run: |
-          mvn clean compile
-          sed -i '/skipDailyTask/s/true/${{secrets.SKIPDAILYTASK}}/g' target/classes/config.json
-          sed -i '/predictNumberOfCoins/s/15/${{secrets.PREDICT_COINS}}/g' target/classes/config.json
-          sed -i '/minimumNumberOfCoins/s/30/${{secrets.RETAIN_COINS}}/g' target/classes/config.json
-          mvn package
-          java -jar target/bilibili-match-prediction-*-jar-with-dependencies.jar ${DEDEUSERID} ${SESSDATA} ${BILI_JCT} ${SERVERPUSHKEY} ${TELEGRAMBOTTOKEN} ${TELEGRAMCHATID}
+          BILI_JCT: ${{ secrets.BILI_JCT }}
+          DEDEUSERID: ${{ secrets.DEDEUSERID }}
+          SESSDATA: ${{ secrets.SESSDATA }}
+          SCKEY: ${{ secrets.SCKEY }}
+          TELEGRAMBOTTOKEN: ${{ secrets.TELEGRAMBOTTOKEN }}
+          TELEGRAMCHATID: ${{ secrets.TELEGRAMCHATID }}
+          TZ: Asia/Shanghai
+          # 时区配置为Asia/Shanghai
+        run:
+          mvn compile exec:java -Dexec.mainClass="top.misec.Main" -Dexec.args="${DEDEUSERID} ${SESSDATA} ${BILI_JCT} ${SCKEY} ${TELEGRAMBOTTOKEN} ${TELEGRAMCHATID}"
